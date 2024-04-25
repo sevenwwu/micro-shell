@@ -23,36 +23,39 @@
 /* Prototypes */
 
 void processline (char *line);
+char** arg_parse(char* line, int* argcptr);
 
 /* Shell main */
 
-int
-main (void)
+int main (void)
 {
-    char   buffer [LINELEN];
-    int    len;
+    char line[] = {'a','b','c','\0'};
+    int num = 3;
+    arg_parse(line,&num);
+    // char   buffer [LINELEN];
+    // int    len;
 
-    while (1) {
+    // while (1) {
 
-        /* prompt and get line */
-	fprintf (stderr, "%% ");
-	if (fgets (buffer, LINELEN, stdin) != buffer)
-	  break;
+    //     /* prompt and get line */
+	// fprintf (stderr, "%% ");
+	// if (fgets (buffer, LINELEN, stdin) != buffer)
+	//   break;
 
-        /* Get rid of \n at end of buffer. */
-	len = strlen(buffer);
-	if (buffer[len-1] == '\n')
-	    buffer[len-1] = 0;
+    //     /* Get rid of \n at end of buffer. */
+	// len = strlen(buffer);
+	// if (buffer[len-1] == '\n')
+	//     buffer[len-1] = 0;
 
-	/* Run it ... */
-	processline (buffer);
+	// /* Run it ... */
+	// processline (buffer);
 
-    }
+    // }
 
-    if (!feof(stdin))
-        perror ("read");
+    // if (!feof(stdin))
+    //     perror ("read");
 
-    return 0;		/* Also known as exit (0); */
+    // return 0;		/* Also known as exit (0); */
 }
 
 
@@ -83,6 +86,26 @@ void processline (char *line)
     if (wait (&status) < 0) {
       /* Wait wasn't successful */
       perror ("wait");
+    }
+}
+
+
+char** arg_parse(char* line, int* argcptr)
+{
+    *argcptr = 0;
+
+    char* currentStartOfToken;
+    int onWhiteSpace = 0;
+    if (*line == " ")
+    {
+        onWhiteSpace = 1;
+    }
+    while (*line != '\0')
+    {
+        if (onWhiteSpace)
+        {
+            
+        }
     }
 }
 
