@@ -38,6 +38,8 @@ int main (void)
     //     printf("%s\n",*args);
     //     args++;
     // }
+
+
     char   buffer [LINELEN];
     int    len;
 
@@ -109,53 +111,52 @@ void processline (char *line)
 char** arg_parse(char* line, int* argcptr)
 {
     *argcptr = 0;
-    char* firstPass = line;
-    while (1)
+    int i = 0;
+    int onWhiteSpace = 1;
+    while (line[i] != '\0')
     {
-        while (*firstPass == ' ')
-        {
-            firstPass++;
+        if (line[i] == ' ')
+        {   
+            if (!onWhiteSpace)
+            {
+                onWhiteSpace = 1;
+                line[i] = '\0';
+            }
+            i++;
+            continue;
         }
-        if (*firstPass == '\0')
+        
+        if (onWhiteSpace)
         {
-            break;
+            (*argcptr)++;
+            onWhiteSpace = 0;
         }
 
-        while (*firstPass != ' ' && *firstPass != '\0')
-        {
-            firstPass++;
-        }
-        (*argcptr)++;
-        if (*firstPass == '\0')
-        {
-            break;
-        }
-        *firstPass = '\0';
-        firstPass++;
+        i++;
     }
 
     char** args = malloc(*argcptr+1);
+    args[*argcptr] = '\0';
 
-    args[*argcptr] = NULL;
-
-    char** currentArg = args;
+    int argIndex = 0;
+    int lineIndex = 0;
 
     int argCount = 0;
     while (argCount < *argcptr)
     {
-        while (*line == ' ')
+        while (line[lineIndex] == ' ')
         {
-            line++;
+            lineIndex++;
         }
 
-        *currentArg = line;
-        (currentArg)++;
-        while (*line != '\0')
+        args[argIndex] = &(line[lineIndex]);
+        argIndex++;
+        while (line[lineIndex] != '\0')
         {
-            line++;
+            lineIndex++;
         }
 
-        line++;
+        lineIndex++;
         argCount++;
     }
 
