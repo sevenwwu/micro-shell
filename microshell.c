@@ -113,9 +113,10 @@ char** arg_parse(char* line, int* argcptr)
     *argcptr = 0;
     int i = 0;
     int onWhiteSpace = 1;
+    int inQuotes = 0;
     while (line[i] != '\0')
     {
-        if (line[i] == ' ')
+        if (line[i] == ' ' && !inQuotes)
         {   
             if (!onWhiteSpace)
             {
@@ -132,7 +133,25 @@ char** arg_parse(char* line, int* argcptr)
             onWhiteSpace = 0;
         }
 
+        if (line[i] == '"')
+        {
+            if (inQuotes)
+            {
+                inQuotes = 0;
+            }
+            else
+            {
+                inQuotes = 1;
+            }
+        }
+
         i++;
+    }
+
+    if (inQuotes)
+    {
+        fprintf(stderr, "Quote never closed\n");
+        return NULL;
     }
 
     char** args = malloc(*argcptr+1);
@@ -153,6 +172,17 @@ char** arg_parse(char* line, int* argcptr)
         argIndex++;
         while (line[lineIndex] != '\0')
         {
+            if (line[lineIndex] == '"')
+            {
+                int shift = lineIndex;
+                while (line[shift] != '\0')
+                {
+                    line[shift] = line[shift+1];
+                    shift++;
+                }
+                line[shift] = ' ';
+                lineIndex--;
+            }
             lineIndex++;
         }
 
