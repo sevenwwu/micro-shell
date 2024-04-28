@@ -29,33 +29,39 @@ char** arg_parse(char* line, int* argcptr);
 
 int main (void)
 {
-    char line[] = {'a','b','c','\0'};
-    int num = 3;
-    arg_parse(line,&num);
-    // char   buffer [LINELEN];
-    // int    len;
+    // char line[] = {'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\0'};
+    // int num = 0;
+    // char** args = arg_parse(line,&num);
 
-    // while (1) {
-
-    //     /* prompt and get line */
-	// fprintf (stderr, "%% ");
-	// if (fgets (buffer, LINELEN, stdin) != buffer)
-	//   break;
-
-    //     /* Get rid of \n at end of buffer. */
-	// len = strlen(buffer);
-	// if (buffer[len-1] == '\n')
-	//     buffer[len-1] = 0;
-
-	// /* Run it ... */
-	// processline (buffer);
-
+    // for (int i = 0; i < num; i++)
+    // {
+    //     printf("%s\n",*args);
+    //     args++;
     // }
+    char   buffer [LINELEN];
+    int    len;
 
-    // if (!feof(stdin))
-    //     perror ("read");
+    while (1) {
 
-    // return 0;		/* Also known as exit (0); */
+        /* prompt and get line */
+	fprintf (stderr, "%% ");
+	if (fgets (buffer, LINELEN, stdin) != buffer)
+	  break;
+
+        /* Get rid of \n at end of buffer. */
+	len = strlen(buffer);
+	if (buffer[len-1] == '\n')
+	    buffer[len-1] = 0;
+
+	/* Run it ... */
+	processline (buffer);
+
+    }
+
+    if (!feof(stdin))
+        perror ("read");
+
+    return 0;		/* Also known as exit (0); */
 }
 
 
@@ -64,6 +70,14 @@ void processline (char *line)
     pid_t  cpid;
     int    status;
     
+    int argc;
+    char** argv = arg_parse(line,&argc);
+
+    if (argc == 0)
+    {
+        return;
+    }
+
     /* Start a new process to do the job. */
     cpid = fork();
     if (cpid < 0) {
@@ -75,7 +89,7 @@ void processline (char *line)
     /* Check for who we are! */
     if (cpid == 0) {
       /* We are the child! */
-      execlp (line, line, (char *)0);
+      execvp(argv[0], argv);
       /* execlp reurned, wasn't successful */
       perror ("exec");
       fclose(stdin);  // avoid a linux stdio bug
@@ -87,25 +101,66 @@ void processline (char *line)
       /* Wait wasn't successful */
       perror ("wait");
     }
+
+    free(argv);
 }
 
 
 char** arg_parse(char* line, int* argcptr)
 {
     *argcptr = 0;
-
-    char* currentStartOfToken;
-    int onWhiteSpace = 0;
-    if (*line == " ")
+    char* firstPass = line;
+    while (1)
     {
-        onWhiteSpace = 1;
-    }
-    while (*line != '\0')
-    {
-        if (onWhiteSpace)
+        while (*firstPass == ' ')
         {
-            
+            firstPass++;
         }
+        if (*firstPass == '\0')
+        {
+            break;
+        }
+
+        while (*firstPass != ' ' && *firstPass != '\0')
+        {
+            firstPass++;
+        }
+        (*argcptr)++;
+        if (*firstPass == '\0')
+        {
+            break;
+        }
+        *firstPass = '\0';
+        firstPass++;
     }
+
+    char** args = malloc(*argcptr+1);
+
+    args[*argcptr] = NULL;
+
+    char** currentArg = args;
+
+    int argCount = 0;
+    while (argCount < *argcptr)
+    {
+        while (*line == ' ')
+        {
+            line++;
+        }
+
+        *currentArg = line;
+        (currentArg)++;
+        while (*line != '\0')
+        {
+            line++;
+        }
+
+        line++;
+        argCount++;
+    }
+
+    return args;
 }
+    
+
 
