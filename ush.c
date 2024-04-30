@@ -27,53 +27,41 @@ char** arg_parse(char* line, int* argcptr);
 
 /* Shell main */
 
-int main (void)
+int main(void)
 {
-    // char line[] = {'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\0'};
-    // int num = 0;
-    // char** args = arg_parse(line,&num);
+    char buffer[LINELEN];
+    int len;
 
-    // for (int i = 0; i < num; i++)
-    // {
-    //     printf("%s\n",*args);
-    //     args++;
-    // }
-
-
-    char   buffer [LINELEN];
-    int    len;
-
-    while (1) {
+    while (1)
+    {
 
         /* prompt and get line */
-	fprintf (stderr, "%% ");
-	if (fgets (buffer, LINELEN, stdin) != buffer)
-	  break;
+        fprintf(stderr, "%% ");
+        if (fgets(buffer, LINELEN, stdin) != buffer)
+            break;
 
         /* Get rid of \n at end of buffer. */
-	len = strlen(buffer);
-	if (buffer[len-1] == '\n')
-	    buffer[len-1] = 0;
+        len = strlen(buffer);
+        if (buffer[len - 1] == '\n')
+            buffer[len - 1] = 0;
 
-	/* Run it ... */
-	processline (buffer);
-
+        /* Run it ... */
+        processline(buffer);
     }
 
     if (!feof(stdin))
-        perror ("read");
+        perror("read");
 
-    return 0;		/* Also known as exit (0); */
+    return 0; /* Also known as exit (0); */
 }
 
-
-void processline (char *line)
+void processline(char *line)
 {
-    pid_t  cpid;
-    int    status;
-    
+    pid_t cpid;
+    int status;
+
     int argc;
-    char** argv = arg_parse(line,&argc);
+    char **argv = arg_parse(line, &argc);
 
     if (argc == 0)
     {
@@ -82,31 +70,33 @@ void processline (char *line)
 
     /* Start a new process to do the job. */
     cpid = fork();
-    if (cpid < 0) {
-      /* Fork wasn't successful */
-      perror ("fork");
-      return;
+    if (cpid < 0)
+    {
+        /* Fork wasn't successful */
+        perror("fork");
+        return;
     }
-    
+
     /* Check for who we are! */
-    if (cpid == 0) {
-      /* We are the child! */
-      execvp(argv[0], argv);
-      /* execlp reurned, wasn't successful */
-      perror ("exec");
-      fclose(stdin);  // avoid a linux stdio bug
-      exit (127);
+    if (cpid == 0)
+    {
+        /* We are the child! */
+        execvp(argv[0], argv);
+        /* execlp reurned, wasn't successful */
+        perror("exec");
+        fclose(stdin); // avoid a linux stdio bug
+        exit(127);
     }
-    
+
     /* Have the parent wait for child to complete */
-    if (wait (&status) < 0) {
-      /* Wait wasn't successful */
-      perror ("wait");
+    if (wait(&status) < 0)
+    {
+        /* Wait wasn't successful */
+        perror("wait");
     }
 
     free(argv);
 }
-
 
 char** arg_parse(char* line, int* argcptr)
 {
