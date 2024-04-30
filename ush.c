@@ -62,7 +62,12 @@ void processline(char *line)
     int status;
 
     int argc;
-    char **argv = arg_parse(line, &argc);
+
+    char expandedLine[LINELEN];
+
+    expand(line,expandedLine,LINELEN);
+
+    char **argv = arg_parse(expandedLine, &argc);
 
     if (argc == 0)
     {
