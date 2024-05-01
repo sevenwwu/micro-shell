@@ -3,7 +3,7 @@
 CC=gcc
 
 # Define any compile-time flags
-CFLAGS=-Wall
+CFLAGS=-g -Wall
 
 # Define the target executable name
 TARGET=ush
