@@ -12,7 +12,7 @@ TARGET=ush
 BINDIR=bin
 
 # Define object files
-OBJS=$(BINDIR)/ush.o $(BINDIR)/expand.o
+OBJS=$(BINDIR)/ush.o $(BINDIR)/expand.o $(BINDIR)/builtin.o
 
 # Default target
 all: directories $(BINDIR)/$(TARGET)
@@ -33,6 +33,10 @@ $(BINDIR)/ush.o: ush.c defn.h
 $(BINDIR)/expand.o: expand.c defn.h
 	$(CC) $(CFLAGS) -c expand.c -o $(BINDIR)/expand.o
 
+# Compile builtin.c with defn.h dependency
+$(BINDIR)/builtin.o: builtin.c defn.h
+	$(CC) $(CFLAGS) -c builtin.c -o $(BINDIR)/builtin.o
+	
 # Clean target
 clean:
 	rm -rf $(BINDIR)
