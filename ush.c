@@ -29,7 +29,7 @@ char** arg_parse(char* line, int* argcptr);
 /* Shell main */
 
 int main(void)
-{
+{   
     char buffer[LINELEN];
     int len;
 
@@ -65,7 +65,10 @@ void processline(char *line)
 
     char expandedLine[LINELEN];
 
-    expand(line,expandedLine,LINELEN);
+    if (expand(line,expandedLine,LINELEN) != 0)
+    {
+        return;
+    }
 
     char **argv = arg_parse(expandedLine, &argc);
 
