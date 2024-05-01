@@ -28,7 +28,7 @@ int expand(char* orig, char* new, int newsize)
                     writeToNew = buffer;
                     break;
                 case '{':
-                    char* environmentVariable = &orig[origIndex];
+                    char* environmentVariable = &orig[origIndex+1];
                     while (orig[origIndex] != '}' && orig[origIndex] != '\0')
                     {
                         origIndex++;
@@ -42,6 +42,11 @@ int expand(char* orig, char* new, int newsize)
 
                     orig[origIndex] = '\0';
                     writeToNew = getenv(environmentVariable);
+                    if (writeToNew == NULL)
+                    {
+                        buffer[0] = '\0';
+                        writeToNew = buffer;
+                    }
                     orig[origIndex] = '}';
                     break;
                 default:
