@@ -76,6 +76,12 @@ void envunset_builtin(char** argv, int argc)
 
 void cd(char** argv, int argc)
 {
-
+    if (argc < 2)
+    {
+        chdir(getenv("HOME"));
+        return;
+    }
+    char path[256];
+    chdir(strcat(strcat(getcwd(path,256),"/"),argv[1]));
 }
 
