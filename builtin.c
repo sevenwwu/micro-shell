@@ -56,12 +56,18 @@ void envset_builtin(char** argv, int argc)
         return;
     }
 
-    char* envStr = "";
+    char* envValue = "";
     if (argc > 2)
     {
-        envStr = argv[2];
+        envValue = argv[2];
     }
-    setenv(argv[1],envStr,1);
+
+
+    if (setenv(argv[1], argv[2], 1) != 0)
+    {
+        // Handle error, for example, print an error message
+        perror("Failed to set environment variable");
+    }
 }
 
 void envunset_builtin(char** argv, int argc)
