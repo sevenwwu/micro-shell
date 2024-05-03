@@ -26,8 +26,7 @@ int tryExecuteBuiltin(char** argv, int argc)
     }
     for (int i = 0; i < numOfBuiltIns; i++)
     {
-        if (strlen(builtInCommandNames[i]) == strlen(argv[0]) &&
-            strcmp(builtInCommandNames[i],argv[0]) == 0)
+        if (strcmp(builtInCommandNames[i],argv[0]) == 0)
         {
             builtInFunctions[i](argv,argc);
             return 0;
@@ -63,9 +62,9 @@ void envset_builtin(char** argv, int argc)
     }
 
 
-    if (setenv(argv[1], argv[2], 1) != 0)
+    if (setenv(argv[1], envValue, 1) != 0)
     {
-        perror("Failed to set environment variable");
+        perror("failed to set environment variable");
     }
 }
 
@@ -86,7 +85,18 @@ void cd_builtin(char** argv, int argc)
         chdir(getenv("HOME"));
         return;
     }
+
     char path[256];
-    chdir(strcat(strcat(getcwd(path,256),"/"),argv[1]));
+    if (argc == 2)
+    {
+        if (chdir(argv[1]))
+        {
+            perror("failed to change directory");
+        }
+    }
+    else
+    {
+        fprintf(strerror,"invalid directory");
+    }
 }
 
