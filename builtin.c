@@ -12,10 +12,10 @@ typedef void (*func_ptr)(char**,int);
 void exit_builtin(char**,int);
 void envset_builtin(char**,int);
 void envunset_builtin(char**,int);
-void cd(char**,int);
+void cd_builtin(char**,int);
 
 static char* builtInCommandNames[] = {"exit", "envset", "envunset", "cd"};
-static func_ptr builtInFunctions[] = {exit_builtin,envset_builtin,envunset_builtin,cd};
+static func_ptr builtInFunctions[] = {exit_builtin,envset_builtin,envunset_builtin,cd_builtin};
 static int numOfBuiltIns = 4;
 
 int tryExecuteBuiltin(char** argv, int argc)
@@ -65,7 +65,6 @@ void envset_builtin(char** argv, int argc)
 
     if (setenv(argv[1], argv[2], 1) != 0)
     {
-        // Handle error, for example, print an error message
         perror("Failed to set environment variable");
     }
 }
@@ -80,7 +79,7 @@ void envunset_builtin(char** argv, int argc)
     unsetenv(argv[1]);
 }
 
-void cd(char** argv, int argc)
+void cd_builtin(char** argv, int argc)
 {
     if (argc < 2)
     {

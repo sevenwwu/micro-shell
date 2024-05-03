@@ -158,7 +158,12 @@ char** arg_parse(char* line, int* argcptr)
         return NULL;
     }
 
-    char** args = malloc(*argcptr+1);
+    char** args = (char **)malloc((*argcptr + 1) * sizeof(char *));;
+    if (args == NULL)
+    {
+        perror("memory allocation fail");
+        exit(EXIT_FAILURE);
+    }
     args[*argcptr] = '\0';
 
     int argIndex = 0;
