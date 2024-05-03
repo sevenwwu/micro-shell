@@ -86,7 +86,6 @@ void cd_builtin(char** argv, int argc)
         return;
     }
 
-    char path[256];
     if (argc == 2)
     {
         if (chdir(argv[1]))
@@ -96,7 +95,7 @@ void cd_builtin(char** argv, int argc)
     }
     else
     {
-        fprintf(strerror,"invalid directory");
+        perror("invalid directory");
     }
 }
 
