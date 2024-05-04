@@ -40,9 +40,21 @@ int main(void)
         fprintf(stderr, "%% ");
         if (fgets(buffer, LINELEN, stdin) != buffer)
             break;
-
+        
         /* Get rid of \n at end of buffer. */
         len = strlen(buffer);
+        for (int i = 0; i < len; i++)
+        {
+            if (buffer[i] == '#')
+            {
+                if ((i != 0) && (buffer[i-1] == '$'))
+                {
+                    continue;
+                }
+                buffer[i] = '\0';
+                break;
+            }
+        }
         if (buffer[len - 1] == '\n')
             buffer[len - 1] = 0;
 
@@ -76,7 +88,11 @@ void processline(char *line)
     {
         return;
     }
-
+    printf("%d\n",argc);
+    for (int i = 0; i < argc; i++)
+    {
+        printf("%s\n",argv[i]);
+    }
     
 
     if (tryExecuteBuiltin(argv,argc) != 0)

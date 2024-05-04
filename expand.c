@@ -49,6 +49,11 @@ int expand(char* orig, char* new, int newsize)
                     }
                     orig[origIndex] = '}';
                     break;
+                case '#':
+                    buffer[0] = '#';
+                    buffer[1] = '\0';
+                    writeToNew = buffer;
+                    break;
                 default:
                     buffer[0] = '$';
                     buffer[1] = orig[origIndex];
