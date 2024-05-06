@@ -73,15 +73,7 @@ int expand(char* orig, char* new, int newsize)
                         }
                         char* arg = mainargv[atoi(numStr)];
 
-                        if (strlen(arg) > bufferSize)
-                        {
-                            fprintf(stderr,"argument exceeds buffer size");
-                            return -1;
-                        }
-                        
-                        strcpy(buffer,arg);
-
-                        writeToNew = buffer;
+                        writeToNew = arg;
                         origIndex = currentIndex-1;
                     }
                     else
