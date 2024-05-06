@@ -26,19 +26,44 @@
 void processline (char *line);
 char** arg_parse(char* line, int* argcptr);
 
+/* Global Variables */
+FILE* inputStream;
+int mainargc;
+char** mainargv;
+
 /* Shell main */
 
-int main(void)
+int main(int argc, char **argv)
 {   
+    mainargc = argc;
+    mainargv = argv;
+
     char buffer[LINELEN];
     int len;
+
+    if (argc > 1)
+    {
+        inputStream = fopen(mainargv[1],"r");
+        if (inputStream == NULL)
+        {
+            perror("could not open file");
+            exit(127);
+        }
+    }
+    else
+    {
+        inputStream = stdin;
+    }
 
     while (1)
     {
 
         /* prompt and get line */
-        fprintf(stderr, "%% ");
-        if (fgets(buffer, LINELEN, stdin) != buffer)
+        if (inputStream == stdin)
+        {
+            fprintf(stderr, "%% ");
+        }
+        if (fgets(buffer, LINELEN, inputStream) != buffer)
             break;
         
         /* Get rid of \n at end of buffer. */
@@ -62,7 +87,7 @@ int main(void)
         processline(buffer);
     }
 
-    if (!feof(stdin))
+    if (!feof(inputStream))
         perror("read");
 
     return 0; /* Also known as exit (0); */
@@ -88,11 +113,6 @@ void processline(char *line)
     {
         return;
     }
-    printf("%d\n",argc);
-    for (int i = 0; i < argc; i++)
-    {
-        printf("%s\n",argv[i]);
-    }
     
 
     if (tryExecuteBuiltin(argv,argc) != 0)
@@ -113,7 +133,7 @@ void processline(char *line)
             execvp(argv[0], argv);
             /* execlp reurned, wasn't successful */
             perror("exec");
-            fclose(stdin); // avoid a linux stdio bug
+            fclose(inputStream); // avoid a linux stdio bug
             exit(127);
         }
 
@@ -171,6 +191,7 @@ char** arg_parse(char* line, int* argcptr)
     if (inQuotes)
     {
         fprintf(stderr, "Quote never closed\n");
+        *argcptr = 0;
         return NULL;
     }
 

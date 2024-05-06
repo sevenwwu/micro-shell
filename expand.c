@@ -7,7 +7,6 @@
 #include <sys/wait.h>
 #include "defn.h"
 
-
 int expand(char* orig, char* new, int newsize)
 {   
     int origIndex = 0;
@@ -17,7 +16,8 @@ int expand(char* orig, char* new, int newsize)
     {
         if (orig[origIndex] == '$')
         {   
-            char buffer[32];
+            int bufferSize = 32;
+            char buffer[bufferSize];
             char* writeToNew;
             origIndex++;
             switch (orig[origIndex])
@@ -55,10 +55,43 @@ int expand(char* orig, char* new, int newsize)
                     writeToNew = buffer;
                     break;
                 default:
-                    buffer[0] = '$';
-                    buffer[1] = orig[origIndex];
-                    buffer[2] = '\0';
-                    writeToNew = buffer;
+                    int currentIndex = origIndex;
+                    while (orig[currentIndex] != '\0' && strchr("0123456789",orig[currentIndex]) != NULL)
+                    {
+                        currentIndex++;
+                    }
+
+                    if (currentIndex != origIndex)
+                    {
+                        char numStr[currentIndex - origIndex];
+                        strncpy(numStr,&orig[origIndex],currentIndex - origIndex);
+                        
+                        if (atoi(numStr) >= mainargc)
+                        {
+                            fprintf(stderr,"invalid argument index");
+                            return -1;
+                        }
+                        char* arg = mainargv[atoi(numStr)];
+
+                        if (strlen(arg) > bufferSize)
+                        {
+                            fprintf(stderr,"argument exceeds buffer size");
+                            return -1;
+                        }
+                        
+                        strcpy(buffer,arg);
+
+                        writeToNew = buffer;
+                        origIndex = currentIndex-1;
+                    }
+                    else
+                    {
+                        buffer[0] = '$';
+                        buffer[1] = orig[origIndex];
+                        buffer[2] = '\0';
+                        writeToNew = buffer;
+                    }
+
                     break;
             }
             while (*writeToNew != '\0')
@@ -92,3 +125,4 @@ int expand(char* orig, char* new, int newsize)
 
     return 0;
 }
+
