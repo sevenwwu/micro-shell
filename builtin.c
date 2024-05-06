@@ -13,10 +13,12 @@ void exit_builtin(char**,int);
 void envset_builtin(char**,int);
 void envunset_builtin(char**,int);
 void cd_builtin(char**,int);
+void shift_builtin(char**,int);
+void unshift_builtin(char**,int);
 
-static char* builtInCommandNames[] = {"exit", "envset", "envunset", "cd"};
-static func_ptr builtInFunctions[] = {exit_builtin,envset_builtin,envunset_builtin,cd_builtin};
-static int numOfBuiltIns = 4;
+static char* builtInCommandNames[] = {"exit", "envset", "envunset", "cd","shift","unshift"};
+static func_ptr builtInFunctions[] = {exit_builtin,envset_builtin,envunset_builtin,cd_builtin,shift_builtin,unshift_builtin};
+static int numOfBuiltIns = 6;
 
 int tryExecuteBuiltin(char** argv, int argc)
 {
@@ -98,4 +100,28 @@ void cd_builtin(char** argv, int argc)
         perror("invalid directory");
     }
 }
+
+
+void shift_builtin(char** argv, int argc)
+{
+    int shiftNum = 1;
+    if (argc >= 2)
+    {
+        shiftNum = atoi(argv[1]);
+    }
+
+    shift += shiftNum;
+}
+
+void unshift_builtin(char** argv, int argc)
+{
+    int shiftNum = shift;
+    if (argc >= 2)
+    {
+        shiftNum = atoi(argv[1]);
+    }
+
+    shift -= shiftNum;
+}
+
 

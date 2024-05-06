@@ -30,6 +30,7 @@ char** arg_parse(char* line, int* argcptr);
 FILE* inputStream;
 int mainargc;
 char** mainargv;
+int shift = 0;
 
 /* Shell main */
 

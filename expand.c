@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 #include "defn.h"
 
+
 int expand(char* orig, char* new, int newsize)
 {   
     int origIndex = 0;
@@ -50,8 +51,8 @@ int expand(char* orig, char* new, int newsize)
                     orig[origIndex] = '}';
                     break;
                 case '#':
-                    buffer[0] = '#';
-                    buffer[1] = '\0';
+                    sprintf(buffer, "%d", mainargc - shift - 1);
+                    
                     writeToNew = buffer;
                     break;
                 default:
@@ -66,12 +67,20 @@ int expand(char* orig, char* new, int newsize)
                         char numStr[currentIndex - origIndex];
                         strncpy(numStr,&orig[origIndex],currentIndex - origIndex);
                         
-                        if (atoi(numStr) >= mainargc)
+                        int argumentIndex = atoi(numStr) + 1 + shift;
+
+                        if (atoi(numStr) == 0)
                         {
-                            fprintf(stderr,"invalid argument index");
-                            return -1;
+                            argumentIndex = 1;
                         }
-                        char* arg = mainargv[atoi(numStr)];
+
+                        if (argumentIndex >= mainargc)
+                        {
+                            buffer[0] = '\0';
+                            writeToNew = buffer;
+                            break;
+                        }
+                        char* arg = mainargv[argumentIndex];
 
                         writeToNew = arg;
                         origIndex = currentIndex-1;
