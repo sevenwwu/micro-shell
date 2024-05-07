@@ -7,6 +7,10 @@
 #include <sys/wait.h>
 #include "defn.h"
 
+char* dollarExpand(char* buffer, int bufferSize);
+char* envExpand(char* buffer, int bufferSize, char* orig, int* origIndex);
+char* hashExpand(char* buffer);
+char* argumentExpand(char* buffer, int bufferSize, char* orig, int* origIndex);
 
 int expand(char* orig, char* new, int newsize)
 {   
@@ -24,75 +28,27 @@ int expand(char* orig, char* new, int newsize)
             switch (orig[origIndex])
             {
                 case '$':
-                    pid_t pid = getpid();
-                    snprintf(buffer, sizeof(buffer), "%d", pid);
-                    writeToNew = buffer;
+                    writeToNew = dollarExpand(buffer,bufferSize);
                     break;
                 case '{':
-                    char* environmentVariable = &orig[origIndex+1];
-                    while (orig[origIndex] != '}' && orig[origIndex] != '\0')
-                    {
-                        origIndex++;
-                    }
-
-                    if (orig[origIndex] == '\0')
-                    {
-                        fprintf(stderr, "Invalid Variable Syntax\n");
-                        return 1;
-                    }
-
-                    orig[origIndex] = '\0';
-                    writeToNew = getenv(environmentVariable);
+                    writeToNew = envExpand(buffer,bufferSize,orig,&origIndex);
                     if (writeToNew == NULL)
                     {
-                        buffer[0] = '\0';
-                        writeToNew = buffer;
+                        return -1;
                     }
-                    orig[origIndex] = '}';
                     break;
                 case '#':
-                    sprintf(buffer, "%d", mainargc - shift - 1);
-                    
-                    writeToNew = buffer;
+                    writeToNew = hashExpand(buffer);
+                    break;
+                case '0': case '1': case '2': case '3': case '4': 
+                case '5': case '6': case '7': case '8': case '9':
+                    writeToNew = argumentExpand(buffer,bufferSize,orig,&origIndex);
                     break;
                 default:
-                    int currentIndex = origIndex;
-                    while (orig[currentIndex] != '\0' && strchr("0123456789",orig[currentIndex]) != NULL)
-                    {
-                        currentIndex++;
-                    }
-
-                    if (currentIndex != origIndex)
-                    {
-                        char numStr[currentIndex - origIndex];
-                        strncpy(numStr,&orig[origIndex],currentIndex - origIndex);
-                        
-                        int argumentIndex = atoi(numStr) + 1 + shift;
-
-                        if (atoi(numStr) == 0)
-                        {
-                            argumentIndex = 1;
-                        }
-
-                        if (argumentIndex >= mainargc)
-                        {
-                            buffer[0] = '\0';
-                            writeToNew = buffer;
-                            break;
-                        }
-                        char* arg = mainargv[argumentIndex];
-
-                        writeToNew = arg;
-                        origIndex = currentIndex-1;
-                    }
-                    else
-                    {
-                        buffer[0] = '$';
-                        buffer[1] = orig[origIndex];
-                        buffer[2] = '\0';
-                        writeToNew = buffer;
-                    }
-
+                    buffer[0] = '$';
+                    buffer[1] = orig[origIndex];
+                    buffer[2] = '\0';
+                    writeToNew = buffer;
                     break;
             }
             while (*writeToNew != '\0')
@@ -127,3 +83,92 @@ int expand(char* orig, char* new, int newsize)
     return 0;
 }
 
+char* dollarExpand(char* buffer, int bufferSize)
+{
+    pid_t pid = getpid();
+    snprintf(buffer, bufferSize, "%d", pid);
+    return buffer;
+}
+
+char* envExpand(char* buffer, int bufferSize, char* orig, int* origIndex)
+{
+    char *environmentVariable = &orig[*origIndex + 1];
+    while (orig[*origIndex] != '}' && orig[*origIndex] != '\0')
+    {
+        (*origIndex)++;
+    }
+
+    if (orig[*origIndex] == '\0')
+    {
+        fprintf(stderr, "Invalid Variable Syntax\n");
+        return NULL;
+    }
+
+    orig[*origIndex] = '\0';
+    char* returnVal = getenv(environmentVariable);
+    if (returnVal == NULL)
+    {
+        buffer[0] = '\0';
+        returnVal = buffer;
+    }
+    orig[*origIndex] = '}';
+
+    return returnVal;
+}
+
+char* hashExpand(char* buffer)
+{
+    int numberOfRemainingArguments = mainargc - shift - 1;
+    if (mainargc == 1)
+    {
+        numberOfRemainingArguments = mainargc - shift;
+    }
+    sprintf(buffer, "%d", numberOfRemainingArguments);
+                    
+    return buffer;
+}
+
+char* argumentExpand(char* buffer, int bufferSize, char* orig, int* origIndex)
+{
+    int currentIndex = *origIndex;
+    while (orig[currentIndex] != '\0' && strchr("0123456789", orig[currentIndex]) != NULL)
+    {
+        currentIndex++;
+    }
+
+    char origChar = orig[currentIndex];
+    orig[currentIndex] = '\0';
+
+    char *numStr = &(orig[*origIndex]);
+
+    int argumentIndex = atoi(numStr) + 1 + shift;
+
+    if (atoi(numStr) == 0)
+    {
+        argumentIndex = 1;
+    }
+    
+    if (atoi(numStr) == 0 && mainargc == 1)
+    {
+        argumentIndex = 0;
+    }
+
+    orig[currentIndex] = origChar;
+
+    char* returnVal;
+
+    if (argumentIndex >= mainargc)
+    {
+        buffer[0] = '\0';
+        returnVal = buffer;
+    }
+    else
+    {
+        char *arg = mainargv[argumentIndex];
+
+        returnVal = arg;
+        *origIndex = currentIndex - 1;
+    }
+
+    return returnVal;
+}
